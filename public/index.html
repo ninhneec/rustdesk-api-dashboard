@@ -38,10 +38,7 @@
             <header class="top-header">
                 <h1 id="page-title">Main Dashboard</h1>
                 <div class="header-status">
-                    <div class="status-indicator error">
-                        <span class="dot"></span>
-                        <span>Mất kết nối</span>
-                    </div>
+                    <!-- Đã xóa nút Mất kết nối giả lập tĩnh -->
                     <div class="admin-profile">Admin</div>
                 </div>
             </header>
@@ -116,10 +113,10 @@
             <section class="view-section" id="view-keys" style="display: none;">
                 <div class="table-container">
                     <div class="table-header">
-                        <h2>Danh Sách Key (Enrollment)</h2>
+                        <h2>Danh Sách Thiết Bị Của Phòng Máy</h2>
                         <div class="table-actions">
-                            <input type="text" placeholder="Seat ID (VD: M01)" class="search-input">
-                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Tạo Key Mới</button>
+                            <input type="text" id="search-input" placeholder="Tìm Seat ID (VD: M01)" class="search-input">
+                            <!-- Đã xóa nút "Tạo Key Mới" thừa thãi -->
                         </div>
                     </div>
                     
@@ -127,9 +124,9 @@
                         <thead>
                             <tr>
                                 <th>Seat ID</th>
-                                <th>Token Key / RustDesk ID</th>
+                                <th>RustDesk ID</th>
                                 <th>Trạng Thái</th>
-                                <th>Sử dụng bởi</th>
+                                <th>Hostname / Sử dụng bởi</th>
                                 <th>Hành động</th>
                             </tr>
                         </thead>

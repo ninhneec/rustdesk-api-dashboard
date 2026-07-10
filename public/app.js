@@ -20,6 +20,7 @@ const devicesList = document.getElementById('devices-list');
 const statTotal = document.getElementById('stat-total');
 const statOnline = document.getElementById('stat-online');
 const statOffline = document.getElementById('stat-offline');
+const searchInput = document.getElementById('search-input');
 
 const assignModal = document.getElementById('assign-modal');
 const modalTitle = document.getElementById('modal-title');
@@ -124,6 +125,8 @@ function updateUI() {
 
     devicesList.innerHTML = '';
 
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
     devices.forEach(device => {
         const lastSeen = new Date(device.last_seen);
         const isOnline = (now - lastSeen) < 60000; // 1 phút
@@ -138,6 +141,13 @@ function updateUI() {
                 seatEl.title = `ID: ${device.id}\nHost: ${device.hostname}`;
             }
         }
+
+        // Search filter
+        const matchSearch = (device.seat_id && device.seat_id.toLowerCase().includes(searchTerm)) ||
+                            device.id.toLowerCase().includes(searchTerm) ||
+                            device.hostname.toLowerCase().includes(searchTerm);
+
+        if (!matchSearch) return;
 
         // Render Table Row
         const tr = document.createElement('tr');
@@ -159,6 +169,12 @@ function updateUI() {
     statTotal.innerText = devices.length;
     statOnline.innerText = onlineCount;
     statOffline.innerText = devices.length - onlineCount;
+}
+
+if (searchInput) {
+    searchInput.addEventListener('input', () => {
+        updateUI();
+    });
 }
 
 // --- SEAT CLICK HANDLER (ASSIGNMENT & FAST CONNECT) ---
