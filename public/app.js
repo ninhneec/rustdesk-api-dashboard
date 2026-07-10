@@ -38,6 +38,18 @@ const fcPass = document.getElementById('fc-pass');
 const btnCloseFc = document.getElementById('btn-close-fc');
 const btnUnassignFc = document.getElementById('btn-unassign-fc');
 
+const mapBoard = document.getElementById('map-board');
+const mapCanvas = document.getElementById('map-canvas');
+const btnZoomIn = document.querySelector('.map-controls .btn-icon:nth-child(1)');
+const btnReset = document.querySelector('.map-controls .btn-icon:nth-child(2)');
+const btnZoomOut = document.querySelector('.map-controls .btn-icon:nth-child(3)');
+
+let scale = 1;
+let translateX = -50; // starts at -50% due to absolute positioning centering
+let translateY = -50;
+let isDragging = false;
+let startX, startY;
+
 // --- TABS LOGIC ---
 tabMap.addEventListener('click', (e) => {
     e.preventDefault();
@@ -244,6 +256,55 @@ function copyText(elementId) {
     navigator.clipboard.writeText(text).then(() => {
         alert('Đã copy: ' + text);
     });
+}
+
+// --- PAN & ZOOM LOGIC ---
+function updateTransform() {
+    // Keep it smooth
+    mapCanvas.style.transform = `translate(calc(-50% + ${translateX}px), calc(-50% + ${translateY}px)) scale(${scale})`;
+}
+
+if (mapBoard && mapCanvas) {
+    // Zoom with wheel
+    mapBoard.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const zoomSpeed = 0.1;
+        if (e.deltaY < 0) scale = Math.min(scale + zoomSpeed, 3);
+        else scale = Math.max(scale - zoomSpeed, 0.3);
+        updateTransform();
+    });
+
+    // Pan with mouse drag
+    mapBoard.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        translateX = e.clientX - startX;
+        translateY = e.clientY - startY;
+        // Tắt transition khi đang drag để mượt hơn
+        mapCanvas.style.transition = 'none'; 
+        updateTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            mapCanvas.style.transition = 'transform 0.1s ease-out';
+        }
+    });
+
+    // Buttons
+    if (btnZoomIn) btnZoomIn.addEventListener('click', () => { scale = Math.min(scale + 0.2, 3); updateTransform(); });
+    if (btnZoomOut) btnZoomOut.addEventListener('click', () => { scale = Math.max(scale - 0.2, 0.3); updateTransform(); });
+    if (btnReset) btnReset.addEventListener('click', () => { scale = 1; translateX = 0; translateY = 0; updateTransform(); });
+    
+    // Initial center
+    translateX = 0; translateY = 0;
+    updateTransform();
 }
 
 // --- API CALLS ---

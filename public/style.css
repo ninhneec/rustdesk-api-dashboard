@@ -340,10 +340,26 @@ body {
     background: #F8FAFC;
     border-radius: 12px;
     position: relative;
-    padding: 32px;
+    overflow: hidden;
+    cursor: grab;
+    /* Hiển thị grid nền để giống map tool */
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+.map-board:active {
+    cursor: grabbing;
+}
+
+.map-canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    transform-origin: 0 0;
     display: flex;
     gap: 32px;
-    overflow: auto;
+    padding: 32px;
+    transition: transform 0.1s ease-out;
 }
 
 .seats-area {
