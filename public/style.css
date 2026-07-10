@@ -425,6 +425,13 @@ body {
     background: var(--status-green);
     border-radius: 50%;
     border: 2px solid white;
+    animation: heartbeat 1.5s infinite;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 193, 104, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(5, 193, 104, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 193, 104, 0); }
 }
 
 .seat.offline {
@@ -619,4 +626,54 @@ body {
     border-radius: 8px;
     cursor: pointer;
     font-weight: 600;
+}
+
+/* Fast Connect Modal Specifics */
+.connect-info-box {
+    background: var(--bg-main);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.info-row:last-child {
+    margin-bottom: 0;
+}
+
+.info-label {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.info-value {
+    font-weight: 600;
+    font-size: 16px;
+    font-family: monospace;
+    background: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.copy-btn {
+    background: var(--primary-light);
+    color: var(--primary);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.copy-btn:hover {
+    background: var(--primary);
+    color: white;
 }

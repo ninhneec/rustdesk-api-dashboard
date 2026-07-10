@@ -156,6 +156,34 @@
         </div>
     </div>
 
+    <!-- Modal Fast Connect -->
+    <div class="modal-overlay" id="fast-connect-modal">
+        <div class="modal-content">
+            <h3 id="fc-modal-title">Kết nối nhanh: M01</h3>
+            <p>Sử dụng thông tin bên dưới để kết nối vào máy trạm:</p>
+            <div class="connect-info-box">
+                <div class="info-row">
+                    <span class="info-label">RustDesk ID:</span>
+                    <div>
+                        <span class="info-value" id="fc-id">...</span>
+                        <button class="copy-btn" onclick="copyText('fc-id')"><i class="fa-solid fa-copy"></i> Copy</button>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Mật khẩu (Pass):</span>
+                    <div>
+                        <span class="info-value" id="fc-pass">...</span>
+                        <button class="copy-btn" onclick="copyText('fc-pass')"><i class="fa-solid fa-copy"></i> Copy</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions" style="justify-content: space-between;">
+                <button class="btn-secondary" style="color: var(--status-red);" id="btn-unassign-fc">Thu Hồi (Đá ra)</button>
+                <button class="btn-primary" id="btn-close-fc">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>

@@ -26,6 +26,13 @@ const modalTitle = document.getElementById('modal-title');
 const unassignedList = document.getElementById('unassigned-devices');
 const btnCancelModal = document.getElementById('btn-cancel-modal');
 
+const fcModal = document.getElementById('fast-connect-modal');
+const fcModalTitle = document.getElementById('fc-modal-title');
+const fcId = document.getElementById('fc-id');
+const fcPass = document.getElementById('fc-pass');
+const btnCloseFc = document.getElementById('btn-close-fc');
+const btnUnassignFc = document.getElementById('btn-unassign-fc');
+
 // --- TABS LOGIC ---
 tabMap.addEventListener('click', (e) => {
     e.preventDefault();
@@ -154,16 +161,26 @@ function updateUI() {
     statOffline.innerText = devices.length - onlineCount;
 }
 
-// --- SEAT CLICK HANDLER (ASSIGNMENT) ---
+// --- SEAT CLICK HANDLER (ASSIGNMENT & FAST CONNECT) ---
 function handleSeatClick(seatId) {
     selectedSeat = seatId;
     
     // Kiểm tra xem ghế này đã có ai ngồi chưa
     const deviceInSeat = devices.find(d => d.seat_id === seatId);
     if (deviceInSeat) {
-        if (confirm(`Ghế ${seatId} đang được sử dụng bởi ID: ${deviceInSeat.id}. Bạn có muốn thu hồi (unassign) không?`)) {
-            unassignDevice(deviceInSeat.id);
-        }
+        // FAST CONNECT MODAL
+        fcModalTitle.innerText = `Kết nối nhanh: ${seatId}`;
+        fcId.innerText = deviceInSeat.id;
+        fcPass.innerText = deviceInSeat.pass || 'Unknown';
+        
+        btnUnassignFc.onclick = () => {
+            if (confirm(`Bạn có chắc muốn thu hồi máy ở ghế ${seatId}?`)) {
+                unassignDevice(deviceInSeat.id);
+                fcModal.classList.remove('show');
+            }
+        };
+        
+        fcModal.classList.add('show');
         return;
     }
 
@@ -197,6 +214,17 @@ function handleSeatClick(seatId) {
 btnCancelModal.addEventListener('click', () => {
     assignModal.classList.remove('show');
 });
+
+btnCloseFc.addEventListener('click', () => {
+    fcModal.classList.remove('show');
+});
+
+function copyText(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Đã copy: ' + text);
+    });
+}
 
 // --- API CALLS ---
 async function assignDevice(rustdeskId, seatId) {
