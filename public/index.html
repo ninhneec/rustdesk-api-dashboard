@@ -11,6 +11,7 @@
     <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -98,12 +99,12 @@
                     <!-- Chat box / Thông báo -->
                     <div class="chat-sidebar">
                         <h2>Thông Báo Chung</h2>
-                        <div class="chat-history">
+                        <div class="chat-history" id="chat-history">
                             <div class="chat-date">Hôm nay</div>
                         </div>
                         <div class="chat-input-area">
-                            <input type="text" placeholder="Nhập tin nhắn..." class="chat-input">
-                            <button class="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+                            <input type="text" placeholder="Nhập tin nhắn phát loa..." class="chat-input" id="admin-chat-input">
+                            <button class="chat-send" id="admin-chat-send"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>

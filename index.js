@@ -2,8 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const http = require('http');
+const { Server } = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
+
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
@@ -16,9 +21,6 @@ const db = new sqlite3.Database('./devices.db', (err) => {
         console.error('Error connecting to database:', err.message);
     } else {
         console.log('Connected to the SQLite database.');
-        // Thêm cột seat_id nếu chưa có (bằng cách tạo bảng mới hỗ trợ cột này)
-        // Thay vì ALTER TABLE phức tạp, ta có thể dùng CREATE TABLE IF NOT EXISTS
-        // Nhưng nếu bảng đã tồn tại không có seat_id, ALTER TABLE sẽ an toàn hơn.
         db.run(`CREATE TABLE IF NOT EXISTS devices (
             id TEXT PRIMARY KEY,
             pass TEXT,
@@ -27,13 +29,50 @@ const db = new sqlite3.Database('./devices.db', (err) => {
             last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
         )`, (err) => {
             if (!err) {
-                // Cố gắng thêm cột seat_id phòng trường hợp bảng cũ đã tồn tại
-                db.run(`ALTER TABLE devices ADD COLUMN seat_id TEXT`, (err) => {
-                    // Bỏ qua lỗi nếu cột đã tồn tại
+                db.run(`ALTER TABLE devices ADD COLUMN seat_id TEXT`, () => {});
+            }
+        });
+        // Bảng lưu tin nhắn Chat
+        db.run(`CREATE TABLE IF NOT EXISTS messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            rustdesk_id TEXT,
+            message TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        )`);
+    }
+});
+
+// Giao tiếp Socket.io
+io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    // Bắt sự kiện có tin nhắn mới từ App Chat
+    socket.on('send_chat', (data) => {
+        // data: { rustdesk_id, message }
+        db.run(`INSERT INTO messages (rustdesk_id, message) VALUES (?, ?)`, [data.rustdesk_id, data.message], function(err) {
+            if (!err) {
+                // Broadcast cho tất cả admin (và client khác)
+                io.emit('new_chat', {
+                    id: this.lastID,
+                    rustdesk_id: data.rustdesk_id,
+                    message: data.message,
+                    timestamp: new Date().toISOString()
                 });
             }
         });
-    }
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+});
+
+// API: Lấy lịch sử chat
+app.get('/api/chat/history', (req, res) => {
+    db.all(`SELECT * FROM messages ORDER BY timestamp DESC LIMIT 50`, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json(rows.reverse()); // Đảo lại theo thứ tự thời gian cũ -> mới
+    });
 });
 
 // API: Cập nhật hoặc thêm thiết bị mới
@@ -93,6 +132,6 @@ app.post('/api/device/unassign', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

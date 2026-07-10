@@ -22,6 +22,10 @@ const statOnline = document.getElementById('stat-online');
 const statOffline = document.getElementById('stat-offline');
 const searchInput = document.getElementById('search-input');
 
+const chatHistory = document.getElementById('chat-history');
+const adminChatInput = document.getElementById('admin-chat-input');
+const adminChatSend = document.getElementById('admin-chat-send');
+
 const assignModal = document.getElementById('assign-modal');
 const modalTitle = document.getElementById('modal-title');
 const unassignedList = document.getElementById('unassigned-devices');
@@ -269,6 +273,68 @@ async function unassignDevice(rustdeskId) {
         alert('Lỗi khi thu hồi thiết bị');
     }
 }
+
+// --- CHAT LOGIC ---
+const socket = io();
+
+function appendAdminMessage(sender, text, timeStr) {
+    const div = document.createElement('div');
+    div.className = 'admin-msg-item';
+    div.innerHTML = `<span class="msg-sender">${sender}</span> ${text} <span class="msg-time">${timeStr}</span>`;
+    chatHistory.appendChild(div);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+// Lấy lịch sử chat ban đầu
+fetch('/api/chat/history').then(r => r.json()).then(rows => {
+    rows.forEach(r => {
+        let sender = r.rustdesk_id === 'ADMIN_BROADCAST' ? 'ADMIN (All)' : r.rustdesk_id;
+        const timeStr = new Date(r.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+        appendAdminMessage(sender, r.message, timeStr);
+    });
+});
+
+socket.on('new_chat', (data) => {
+    let sender = data.rustdesk_id;
+    if (sender.startsWith('ADMIN')) sender = 'ADMIN';
+
+    const timeStr = new Date(data.timestamp).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+    appendAdminMessage(sender, data.message, timeStr);
+
+    // Tìm xem máy này đang ngồi ở ghế nào
+    const device = devices.find(d => d.id === data.rustdesk_id);
+    if (device && device.seat_id) {
+        // Tạo bubble
+        const seatEl = document.getElementById(`seat-${device.seat_id}`);
+        if (seatEl) {
+            const bubble = document.createElement('div');
+            bubble.className = 'chat-bubble show';
+            bubble.innerText = data.message;
+            seatEl.appendChild(bubble);
+
+            // Tự xóa sau 3s
+            setTimeout(() => {
+                if (bubble.parentNode) bubble.parentNode.removeChild(bubble);
+            }, 3000);
+        }
+    }
+});
+
+function sendAdminChat() {
+    const text = adminChatInput.value.trim();
+    if (!text) return;
+
+    socket.emit('send_chat', {
+        rustdesk_id: 'ADMIN_BROADCAST',
+        message: text
+    });
+    adminChatInput.value = '';
+}
+
+adminChatSend.addEventListener('click', sendAdminChat);
+adminChatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendAdminChat();
+});
 
 // Khởi tạo
 renderMap();
