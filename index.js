@@ -16,12 +16,23 @@ const db = new sqlite3.Database('./devices.db', (err) => {
         console.error('Error connecting to database:', err.message);
     } else {
         console.log('Connected to the SQLite database.');
+        // Thêm cột seat_id nếu chưa có (bằng cách tạo bảng mới hỗ trợ cột này)
+        // Thay vì ALTER TABLE phức tạp, ta có thể dùng CREATE TABLE IF NOT EXISTS
+        // Nhưng nếu bảng đã tồn tại không có seat_id, ALTER TABLE sẽ an toàn hơn.
         db.run(`CREATE TABLE IF NOT EXISTS devices (
             id TEXT PRIMARY KEY,
             pass TEXT,
             hostname TEXT,
+            seat_id TEXT,
             last_seen DATETIME DEFAULT CURRENT_TIMESTAMP
-        )`);
+        )`, (err) => {
+            if (!err) {
+                // Cố gắng thêm cột seat_id phòng trường hợp bảng cũ đã tồn tại
+                db.run(`ALTER TABLE devices ADD COLUMN seat_id TEXT`, (err) => {
+                    // Bỏ qua lỗi nếu cột đã tồn tại
+                });
+            }
+        });
     }
 });
 
@@ -57,6 +68,28 @@ app.get('/api/devices', (req, res) => {
             return res.status(500).json({ error: 'Database error' });
         }
         res.json(rows);
+    });
+});
+
+// API: Gán thiết bị vào ghế
+app.post('/api/device/assign', (req, res) => {
+    const { id, seat_id } = req.body;
+    if (!id || !seat_id) return res.status(400).json({ error: 'Missing id or seat_id' });
+
+    db.run(`UPDATE devices SET seat_id = ? WHERE id = ?`, [seat_id, id], function(err) {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json({ success: true });
+    });
+});
+
+// API: Thu hồi (gỡ) thiết bị khỏi ghế
+app.post('/api/device/unassign', (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ error: 'Missing id' });
+
+    db.run(`UPDATE devices SET seat_id = NULL WHERE id = ?`, [id], function(err) {
+        if (err) return res.status(500).json({ error: 'Database error' });
+        res.json({ success: true });
     });
 });
 

@@ -3,60 +3,158 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RustDesk Control Panel</title>
+    <title>Sơ Đồ Phòng Máy - CrmX Admin</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
-                        <path d="M8 21H16M12 17V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                    <h1>Device Management</h1>
-                </div>
-                <div class="status-badge">
-                    <span class="dot pulse"></span>
-                    <span id="device-count">0 Online</span>
-                </div>
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">P</div>
+                <h2>CrmX Admin</h2>
             </div>
-        </header>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" id="tab-map">
+                    <i class="fa-solid fa-map"></i>
+                    <span>Sơ đồ phòng máy</span>
+                </a>
+                <a href="#" class="nav-item" id="tab-keys">
+                    <i class="fa-solid fa-key"></i>
+                    <span>Quản lý Key</span>
+                </a>
+            </nav>
+        </aside>
 
+        <!-- Main Content -->
         <main class="main-content">
-            <div class="search-bar">
-                <input type="text" id="search-input" placeholder="Tìm kiếm theo Hostname hoặc ID...">
-                <button id="refresh-btn" class="btn-icon" title="Làm mới">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8M21 3v5h-5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </div>
+            <!-- Header -->
+            <header class="top-header">
+                <h1 id="page-title">Main Dashboard</h1>
+                <div class="header-status">
+                    <div class="status-indicator error">
+                        <span class="dot"></span>
+                        <span>Mất kết nối</span>
+                    </div>
+                    <div class="admin-profile">Admin</div>
+                </div>
+            </header>
 
-            <div class="table-container">
-                <table class="devices-table">
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Hostname</th>
-                            <th>RustDesk ID</th>
-                            <th>Mật khẩu</th>
-                            <th>Last Seen</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="device-list">
-                        <!-- Items will be injected here by JS -->
-                    </tbody>
-                </table>
-            </div>
+            <!-- Dashboard Stats (only in Keys tab) -->
+            <section class="stats-container" id="stats-section" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-icon gray"><i class="fa-solid fa-laptop"></i></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Tổng số máy</span>
+                        <h3 class="stat-value" id="stat-total">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green"><span class="dot-large"></span></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Đang Online</span>
+                        <h3 class="stat-value" id="stat-online">0</h3>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red"><span class="dot-large"></span></div>
+                    <div class="stat-info">
+                        <span class="stat-label">Offline</span>
+                        <h3 class="stat-value" id="stat-offline">0</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Map View -->
+            <section class="view-section active" id="view-map">
+                <div class="map-layout">
+                    <div class="map-container">
+                        <div class="map-header">
+                            <h2>Sơ Đồ Phòng Máy</h2>
+                            <div class="map-controls">
+                                <button class="btn-icon"><i class="fa-solid fa-plus"></i></button>
+                                <button class="btn-icon active-btn"><i class="fa-solid fa-rotate"></i></button>
+                                <button class="btn-icon"><i class="fa-solid fa-minus"></i></button>
+                            </div>
+                        </div>
+                        
+                        <div class="map-board">
+                            <!-- Sẽ được render qua JS -->
+                            <div class="seats-area" id="seats-container"></div>
+                            
+                            <!-- Cột chức năng bên phải -->
+                            <div class="facilities-column">
+                                <div class="facility-box"><i class="fa-solid fa-server"></i><span>SERVER</span></div>
+                                <div class="facility-box"><i class="fa-solid fa-briefcase"></i><span>BÀN QL</span></div>
+                                <div class="facility-box highlighted"><i class="fa-solid fa-microphone"></i><span>BỤC GIẢNG</span></div>
+                                <div class="facility-box"><i class="fa-solid fa-door-closed"></i><span>TỦ ĐỒ</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat box / Thông báo -->
+                    <div class="chat-sidebar">
+                        <h2>Thông Báo Chung</h2>
+                        <div class="chat-history">
+                            <div class="chat-date">Hôm nay</div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" placeholder="Nhập tin nhắn..." class="chat-input">
+                            <button class="chat-send"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Keys List View -->
+            <section class="view-section" id="view-keys" style="display: none;">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h2>Danh Sách Key (Enrollment)</h2>
+                        <div class="table-actions">
+                            <input type="text" placeholder="Seat ID (VD: M01)" class="search-input">
+                            <button class="btn-primary"><i class="fa-solid fa-plus"></i> Tạo Key Mới</button>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Seat ID</th>
+                                <th>Token Key / RustDesk ID</th>
+                                <th>Trạng Thái</th>
+                                <th>Sử dụng bởi</th>
+                                <th>Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devices-list">
+                            <!-- Render bằng JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="toast">Đã sao chép vào bộ nhớ tạm!</div>
+    <!-- Modal gán thiết bị -->
+    <div class="modal-overlay" id="assign-modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Gán thiết bị cho ghế M01</h3>
+            <p>Chọn một thiết bị chưa được gán bên dưới:</p>
+            <div class="unassigned-list" id="unassigned-devices">
+                <!-- Render bằng JS -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" id="btn-cancel-modal">Hủy</button>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>
